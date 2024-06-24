@@ -17,7 +17,7 @@ library(foreign)
 
 
 # choose working directory
-setwd("~/Desktop/")
+setwd('/Users/dia.yu/Library/Mobile Documents/com~apple~CloudDocs/!Github/chinesedrone')
 
 excel_path1 <- "81uav_data.xlsx"
 dat_81uav <- read_excel(excel_path1)
