@@ -178,7 +178,7 @@ dat_81uav <- dat_81uav %>% separate(location, into = c("province", "city"), sep 
 dat_81uav$city <- sub("市$", "", dat_81uav$city)
 # Handle special cases for direct-controlled municipalities
 dat_81uav <- dat_81uav %>%
-  mutate(city = ifelse(province %in% c("上海", "北京", "重庆", "天津"), province, city)
+  mutate(city = ifelse(province %in% c("上海", "北京", "重庆", "天津"), province, city))
 
 
 # Count the number of NA values in the registeredyear column
