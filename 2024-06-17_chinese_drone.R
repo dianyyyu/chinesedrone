@@ -13,6 +13,10 @@ library(car)
 library(lme4)          # for multilevel models
 library(Rcpp)
 library(foreign)
+library(googleLanguageR)
+library(tmaptools)
+library(leaflet)
+
 
 
 
@@ -72,8 +76,8 @@ dat_81uav$endproduct <- ifelse(dat_81uav$service == 0 & dat_81uav$component == 0
 dat_81uav$registrationyear <- as.numeric(dat_81uav$registrationyear)
 # Count the number of NA values in the registeredyear column
 num_na <- sum(is.na(dat_81uav$registrationyear))
-# Print the result
-print(num_na)
+# Print the result: 6 no registration year
+print(num_na) 
 # Find the rows with NA in the registeredyear column
 na_rows <- dat_81uav[is.na(dat_81uav$registrationyear), ]
 # Print the rows with NA values (6 companies info not updated to 81uav.cn; wait til youuav.com info)
@@ -166,4 +170,46 @@ ggplot(dat_long, aes(x = registrationyear, y = count, color = type, group = type
   labs(title = "Cumulative Types of Firms vs Registration Year", x = "Registration Year", y = "Cumulative Count", color = "Type") +
   theme_minimal()
 
-print("hello")
+####################Location#########
+# Extract province and city
+library(tidyr)
+dat_81uav <- dat_81uav %>% separate(location, into = c("province", "city"), sep = "/")
+# Remove "市" from city names
+dat_81uav$city <- sub("市$", "", dat_81uav$city)
+# Handle special cases for direct-controlled municipalities
+dat_81uav <- dat_81uav %>%
+  mutate(city = ifelse(province %in% c("上海", "北京", "重庆", "天津"), province, city)
+
+
+# Count the number of NA values in the registeredyear column
+num_na <- sum(is.na(dat_81uav$city))
+# Print the result: 162 no location info
+print(num_na)
+
+# Ensure no NA values and UTF-8 encoding
+dat_81uav <- dat_81uav %>%
+  mutate(across(c(province, city), ~ifelse(is.na(.), "", .))) %>%
+  mutate(across(c(province, city), ~utf8::as_utf8(.)))
+
+# Save the data frame to a CSV file
+write.csv(dat_81uav, "2024-06-25_81uav.csv", row.names = FALSE)
+
+
+###translate to english
+library(deeplr)
+# Function to translate text using DeepL API with error handling
+translate_text <- function(text, source_lang = "ZH", target_lang = "EN", auth_key) {
+  if (text == "") return(NA)
+  tryCatch({
+    result <- translate2(text = text, source_lang = source_lang, target_lang = target_lang, auth_key = auth_key)
+    result
+  }, error = function(e) {
+    return(NA)
+  })
+}
+
+# Translate the city names
+dat_81uav$city_eng <- sapply(dat_81uav$city, translate_text, auth_key = "57a9b801-59bf-4f8a-87e8-41061f39286b:fx")
+
+# Translate the province names
+dat_81uav$province_eng <- sapply(dat_81uav$province, translate_text, auth_key = "57a9b801-59bf-4f8a-87e8-41061f39286b:fx")
